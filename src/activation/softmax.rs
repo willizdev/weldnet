@@ -1,27 +1,56 @@
-use crate::{activation::function::ActivationFn, matrix::Matrix};
+use crate::matrix::Matrix;
 
-impl ActivationFn {
-    pub fn softmax(&mut self, inputs: &Matrix) {
-        let mut out: Matrix = inputs.clone();
+pub struct ActFnSoftmax {
+    inputs: Option<Matrix>,
+    output: Option<Matrix>,
+    // gradients
+    d_inputs: Option<Matrix>,
+}
 
-        for i in 0..out.rows {
-            let mut max: f64 = out.get(i, 0);
-            for j in 1..out.cols {
-                max = max.max(out.get(i, j));
+impl ActFnSoftmax {
+    pub fn new() -> Self {
+        Self {
+            inputs: None,
+            output: None,
+            d_inputs: None,
+        }
+    }
+
+    pub fn forward(&mut self, inputs: &Matrix) {
+        let mut output: Matrix = inputs.clone();
+
+        for i in 0..output.rows {
+            let mut max: f64 = output.get(i, 0);
+            for j in 1..output.cols {
+                max = max.max(output.get(i, j));
             }
             let mut sum: f64 = 0.0;
-            for j in 0..out.cols {
+            for j in 0..output.cols {
                 // we subtract by the max to prevent overflow
-                let exp: f64 = (out.get(i, j) - max).exp();
-                out.set(i, j, exp);
+                let exp: f64 = (output.get(i, j) - max).exp();
+                output.set(i, j, exp);
                 sum += exp;
             }
-            for j in 0..out.cols {
-                let norm: f64 = out.get(i, j) / sum;
-                out.set(i, j, norm);
+            for j in 0..output.cols {
+                let norm: f64 = output.get(i, j) / sum;
+                output.set(i, j, norm);
             }
         }
 
-        self.set_output(out);
+        self.output = Some(output);
+        // input is stored for backpropagation
+        self.inputs = Some(inputs.clone());
+    }
+
+    // TODO: implement the derivative
+    #[allow(dead_code)]
+    fn backward(&mut self, d_values: &Matrix) {
+        // let inputs: &Matrix = self.inputs.as_ref().unwrap();
+        let d_inputs: Matrix = d_values.clone();
+        self.d_inputs = Some(d_inputs);
+    }
+
+    pub fn get_output(&self) -> &Option<Matrix> {
+        &self.output
     }
 }
