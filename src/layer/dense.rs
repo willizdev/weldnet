@@ -3,7 +3,12 @@ use crate::{math::Math, matrix::Matrix};
 pub struct DenseLayer {
     weights: Matrix,
     biases: Matrix,
+    inputs: Option<Matrix>,
     output: Option<Matrix>,
+    // gradients
+    d_weights: Option<Matrix>,
+    d_biases: Option<Matrix>,
+    d_inputs: Option<Matrix>,
 }
 
 impl DenseLayer {
@@ -16,7 +21,11 @@ impl DenseLayer {
         Self {
             weights,
             biases,
+            inputs: None,
             output: None,
+            d_weights: None,
+            d_biases: None,
+            d_inputs: None,
         }
     }
 
@@ -25,17 +34,17 @@ impl DenseLayer {
             &Math::product(inputs, &self.weights),
             &self.biases,
         ));
+        // input is stored for backpropagation
+        self.inputs = Some(inputs.clone());
     }
 
-    pub fn get_weights(&self) -> &Matrix {
-        &self.weights
-    }
-
-    pub fn get_biases(&self) -> &Matrix {
-        &self.biases
-    }
-
-    pub fn get_output(&self) -> &Option<Matrix> {
-        &self.output
+    pub fn backward(&mut self, d_values: &Matrix) {
+        // some transposes are needed for correct dimensions
+        self.d_weights = Some(Math::product(
+            &Math::transpose(self.inputs.as_ref().unwrap()),
+            d_values,
+        ));
+        self.d_biases = Some(Math::reduce_sum(d_values));
+        self.d_inputs = Some(Math::product(d_values, &Math::transpose(&self.weights)));
     }
 }
