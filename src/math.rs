@@ -54,4 +54,18 @@ impl Math {
 
         Matrix::new(m.rows, m.cols, res)
     }
+
+    pub fn reduce_sum(m: &Matrix) -> Matrix {
+        let mut res: Vec<f64> = Vec::new();
+
+        for j in 0..m.cols {
+            let mut sum: f64 = 0.0;
+            for i in 0..m.rows {
+                sum += m.get(i, j);
+            }
+            res.push(sum);
+        }
+
+        Matrix::new(1, m.cols, res)
+    }
 }
