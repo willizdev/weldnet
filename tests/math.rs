@@ -59,4 +59,14 @@ mod tests {
         let row = Matrix::new(1, 2, vec![7.0, 8.0]);
         Math::add_row(&matrix, &row);
     }
+
+    #[test]
+    fn test_reduce_sum() {
+        let matrix = Matrix::new(2, 3, vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0]);
+        let result = Math::reduce_sum(&matrix);
+        assert_eq!(result.rows, 1);
+        assert_eq!(result.cols, 3);
+        assert_eq!(result.data.len(), 3);
+        assert_eq!(result.data, vec![5.0, 7.0, 9.0]);
+    }
 }
